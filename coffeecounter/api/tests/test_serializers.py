@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from api.models import Consumption, Badge, PoweredBadge
+from api.models import Consumption, Badge, PoweredBadge, CoffeeUser
 from api.serializers import BadgeSerializer, UserSerializer, ConsumptionSerializer
 from rest_framework.renderers import JSONRenderer
 
@@ -61,3 +61,13 @@ class TestSerializers(TestCase):
 		self.assertEqual(len(perry_serializer.data['badges']), 2)
 		self.assertEqual(len(jacob_serializer.data['badges']), 1)
 		self.assertEqual(jacob_serializer.data['badges'][0]['power'], 2)
+
+
+	def test_user_serializer(self):
+		coffeeuser_perry = CoffeeUser.objects.create(user=self.user_perry, twitter='@perry')
+
+		user_serializer1 = UserSerializer(self.user_perry)
+		user_serializer2 = UserSerializer(self.user_jacob)
+
+		self.assertEqual(user_serializer1.data['twitter'], '@perry')
+		self.assertEqual(user_serializer2.data['twitter'], None)

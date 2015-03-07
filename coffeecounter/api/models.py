@@ -2,9 +2,14 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+class CoffeeUser(models.Model):
+    user = models.OneToOneField(User)
+    twitter = models.CharField(max_length=30, default='')
+
+
 class Badge(models.Model):
-	title = models.CharField(max_length=100, blank=False, null=False)
-	description = models.CharField(max_length=100, blank=False, null=False)
+	title = models.CharField(max_length=100)
+	description = models.CharField(max_length=100)
 
 
 class Consumption(models.Model):

@@ -3,8 +3,8 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 class PoweredBadgeSerializer(serializers.ModelSerializer):
-    title = serializers.ReadOnlyField(source='badge.title')
-    description = serializers.ReadOnlyField(source='badge.description')
+    title = serializers.CharField(source='badge.title', read_only=True)
+    description = serializers.CharField(source='badge.description', read_only=True)
 
     class Meta:
         model = PoweredBadge
@@ -26,7 +26,8 @@ class ConsumptionSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
 
     badges = PoweredBadgeSerializer(source='poweredbadge_set', many=True)
+    twitter = serializers.CharField(source='coffeeuser.twitter')
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'badges')
+        fields = ('id', 'username', 'badges', 'twitter')
