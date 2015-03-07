@@ -53,10 +53,11 @@ class TestSerializers(TestCase):
 
 		pwbadge1 = PoweredBadge.objects.create(user=self.user_perry, badge=badge1)
 		pwbadge2 = PoweredBadge.objects.create(user=self.user_perry, badge=badge2)
-		pwbadge3 = PoweredBadge.objects.create(user=self.user_jacob, badge=badge3, power=1)
+		pwbadge3 = PoweredBadge.objects.create(user=self.user_jacob, badge=badge3, power=2)
 
 		perry_serializer = UserSerializer(self.user_perry)
 		jacob_serializer = UserSerializer(self.user_jacob)
 
 		self.assertEqual(len(perry_serializer.data['badges']), 2)
 		self.assertEqual(len(jacob_serializer.data['badges']), 1)
+		self.assertEqual(jacob_serializer.data['badges'][0]['power'], 2)
