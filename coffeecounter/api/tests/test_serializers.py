@@ -15,22 +15,18 @@ class TestSerializers(TestCase):
 			username='perry', email='perry@dot.com',
             password='top_secret')
 
-
 	def tearDown(self):
 		pass
-
 
 	def test_badge_serializer_valid(self):
 		data = {'pk': 2, 'title': u'Coffee tester', 'description': u'<3 @ 180bpm'}
 		serializer = BadgeSerializer(data=data)
 		self.assertTrue(serializer.is_valid())
 
-
 	def test_badge_serializer_not_valid(self):
 		data = {'pk': 2, 'tile': u'Coffee tester', 'description': u'<3 @ 180bpm'}
 		serializer = BadgeSerializer(data=data)
 		self.assertFalse(serializer.is_valid())
-
 
 	def test_consumption_serializer(self):
 		consumption1 = Consumption.objects.create(user=self.user_perry)
@@ -44,7 +40,6 @@ class TestSerializers(TestCase):
 		self.assertEqual(consumption_serializer1.data['user'], self.user_perry.pk)
 		self.assertEqual(consumption_serializer2.data['user'], self.user_perry.pk)
 		self.assertEqual(consumption_serializer3.data['user'], self.user_jacob.pk)
-
 
 	def test_badge_serializer(self):
 		badge1 = Badge.objects.create(title='Badge 1', description='A lot of coffee')
@@ -61,7 +56,6 @@ class TestSerializers(TestCase):
 		self.assertEqual(len(perry_serializer.data['badges']), 2)
 		self.assertEqual(len(jacob_serializer.data['badges']), 1)
 		self.assertEqual(jacob_serializer.data['badges'][0]['power'], 2)
-
 
 	def test_user_serializer(self):
 		coffeeuser_perry = CoffeeUser.objects.create(user=self.user_perry, twitter='@perry')
