@@ -8,7 +8,7 @@ import json
 class TestViews(TestCase):
 
     def setUp(self):
-        self.user_jacob = User.objects.create_user(
+        self.user_jacob = User.objects.create_superuser(
             username='jacob', email='jacob@dot.com',
             password='top_secret')
         self.user_perry = User.objects.create_user(

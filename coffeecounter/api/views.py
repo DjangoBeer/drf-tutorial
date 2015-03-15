@@ -1,15 +1,19 @@
 from .models import Badge
 from .serializers import BadgeSerializer
+from .permissions import IsSuperUserOrReadOnly
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import permissions
 
 
 class BadgeList(APIView):
     """
     List all badges or create a new badge.
     """
+    permission_classes = (IsSuperUserOrReadOnly,)
+
     def get(self, request, format=None):
         badges = Badge.objects.all()
         serializer = BadgeSerializer(badges, many=True)
@@ -17,6 +21,7 @@ class BadgeList(APIView):
 
     def post(self, request, format=None):
         serializer = BadgeSerializer(data=request.data)
+        self.check_object_permissions(request, serializer)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -27,6 +32,14 @@ class BadgeDetail(APIView):
     """
     Retrieve, update or delete a badge instance.
     """
+    """
+    If you're writing your own views and want to enforce object level permissions,
+    or if you override the get_object method on a generic view, then you'll need to
+    explicitly call the .check_object_permissions(request, obj) method on the view
+    at the point at which you've retrieved the object.
+    """
+    permission_classes = (IsSuperUserOrReadOnly,)
+
     def get_object(self, pk):
         try:
             return Badge.objects.get(pk=pk)
@@ -35,11 +48,13 @@ class BadgeDetail(APIView):
 
     def get(self, request, pk, format=None):
         badge = self.get_object(pk)
+        self.check_object_permissions(request, badge)
         serializer = BadgeSerializer(badge)
         return Response(serializer.data)
 
     def put(self, request, pk, format=None):
         badge = self.get_object(pk)
+        self.check_object_permissions(request, badge)
         serializer = BadgeSerializer(badge, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -48,6 +63,7 @@ class BadgeDetail(APIView):
 
     def patch(self, request, pk, format=None):
         badge = self.get_object(pk)
+        self.check_object_permissions(request, badge)
         serializer = BadgeSerializer(badge, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -56,5 +72,6 @@ class BadgeDetail(APIView):
 
     def delete(self, request, pk, format=None):
         badge = self.get_object(pk)
+        self.check_object_permissions(request, badge)
         badge.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
