@@ -19,8 +19,7 @@ class TestViews(TestCase):
     def tearDown(self):
         pass
 
-    def test_post_badge(self):
-        self.client.login(username='jacob', password='top_secret')
+    def _post_badge(self):
         json_badge = {
             'title': 'A lot of coffee',
             'description': 'Description'
@@ -29,9 +28,19 @@ class TestViews(TestCase):
             '/badges/', json.dumps(json_badge),
             content_type="application/json"
         )
+        return response
+
+    def test_post_badge(self):
+        self.client.login(username='jacob', password='top_secret')
+        response = self._post_badge()
         self.assertEqual(response.data['title'], 'A lot of coffee')
         badges = Badge.objects.all()
         self.assertEqual(len(badges), 1)
+
+    def test_post_badge_forbidden(self):
+        self.client.login(username='perry', password='top_secret')
+        response = self._post_badge()
+        self.assertEqual(response.status_code, 403)
 
     def test_get_badge(self):
         Badge.objects.create(pk=1, title='A lot of coffee', description='Description')
@@ -54,8 +63,7 @@ class TestViews(TestCase):
         )
         self.assertEqual(len(response.data), 3)
 
-    def test_put_badge(self):
-        self.client.login(username='jacob', password='top_secret')
+    def _put_badge(self):
         Badge.objects.create(pk=1, title='A lot of coffee', description='Description 1')
         json_badge = {
             'title': 'A lot of strong coffee',
@@ -65,13 +73,22 @@ class TestViews(TestCase):
             '/badges/1', json.dumps(json_badge),
             content_type="application/json"
         )
+        return response
+
+    def test_put_badge(self):
+        self.client.login(username='jacob', password='top_secret')
+        response = self._put_badge()
         self.assertEqual(response.data['title'], 'A lot of strong coffee')
         badges = Badge.objects.all()
         self.assertEqual(len(badges), 1)
 
-    def test_patch_badge(self):
-        self.client.login(username='jacob', password='top_secret')
-        Badge.objects.create(pk=1, title='A lot of coffee', description='Description 1')
+    def test_put_badge_forbidden(self):
+        self.client.login(username='perry', password='top_secret')
+        response = self._put_badge()
+        self.assertEqual(response.status_code, 403)
+
+    def _patch_badge(self):
+        Badge.objects.create(pk=1, title='Green tea man', description='Description')
         json_badge = {
             'title': 'A lot of strong coffee',
         }
@@ -79,16 +96,34 @@ class TestViews(TestCase):
             '/badges/1', json.dumps(json_badge),
             content_type="application/json"
         )
+        return response
+
+    def test_patch_badge(self):
+        self.client.login(username='jacob', password='top_secret')
+        response = self._patch_badge()
         self.assertEqual(response.data['title'], 'A lot of strong coffee')
         badges = Badge.objects.all()
         self.assertEqual(len(badges), 1)
 
-    def test_delete_badge(self):
-        Badge.objects.create(pk=1, title='Green tea man', description='Description')
+    def test_patch_badge(self):
+        self.client.login(username='perry', password='top_secret')
+        response = self._patch_badge()
+        self.assertEqual(response.status_code, 403)
 
-        self.client.login(username='jacob', password='top_secret')
+    def _delete_badge(self):
+        Badge.objects.create(pk=1, title='Green tea man', description='Description')
         response = self.client.delete(
             '/badges/1',
             content_type="application/json"
         )
+        return response
+
+    def test_delete_badge(self):
+        self.client.login(username='jacob', password='top_secret')
+        response = self._delete_badge()
         self.assertEqual(len(Badge.objects.all()), 0)
+
+    def test_delete_badge_forbidden(self):
+        self.client.login(username='perry', password='top_secret')
+        response = self._delete_badge()
+        self.assertEqual(response.status_code, 403)
