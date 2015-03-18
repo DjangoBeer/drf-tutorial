@@ -127,3 +127,43 @@ class TestViews(TestCase):
         self.client.login(username='perry', password='top_secret')
         response = self._delete_badge()
         self.assertEqual(response.status_code, 403)
+
+    def test_get_all_consumption(self):
+        Consumption.objects.create(user=self.user_perry)
+        Consumption.objects.create(user=self.user_jacob)
+        Consumption.objects.create(user=self.user_perry)
+        Consumption.objects.create(user=self.user_perry)
+        self.client.login(username='jacob', password='top_secret')
+        response = self.client.get(
+            '/consumptions/all/', content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 4)
+
+    def test_post_consumption(self):
+        self.client.login(username='jacob', password='top_secret')
+        response = response = self.client.post(
+            '/consumptions/', content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 201)
+        consumptions = Consumption.objects.all()
+        self.assertEqual(len(consumptions), 1)
+
+    def test_get_all_user_consumption(self):
+        Consumption.objects.create(user=self.user_perry)
+        Consumption.objects.create(user=self.user_jacob)
+        Consumption.objects.create(user=self.user_perry)
+        Consumption.objects.create(user=self.user_perry)
+        self.client.login(username='jacob', password='top_secret')
+        response = self.client.get(
+            '/consumptions/', content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+
+    def test_get_all_user_consumption_fails_if_no_auth(self):
+        Consumption.objects.create(user=self.user_perry)
+        response = self.client.get(
+            '/consumptions/', content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 403)

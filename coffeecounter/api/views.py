@@ -1,5 +1,5 @@
-from .models import Badge
-from .serializers import BadgeSerializer
+from .models import Badge, Consumption
+from .serializers import BadgeSerializer, ConsumptionSerializer
 from .permissions import IsSuperUserOrReadOnly
 from django.http import Http404
 from rest_framework.views import APIView
@@ -31,8 +31,7 @@ class BadgeList(APIView):
 class BadgeDetail(APIView):
     """
     Retrieve, update or delete a badge instance.
-    """
-    """
+
     If you're writing your own views and want to enforce object level permissions,
     or if you override the get_object method on a generic view, then you'll need to
     explicitly call the .check_object_permissions(request, obj) method on the view
@@ -75,3 +74,34 @@ class BadgeDetail(APIView):
         self.check_object_permissions(request, badge)
         badge.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ConsumptionList(APIView):
+    """
+    List all consumptions.
+    """
+    def get(self, request, format=None):
+        consumptions = Consumption.objects.all()
+        serializer = ConsumptionSerializer(consumptions, many=True)
+        return Response(serializer.data)
+
+
+class ConsumptionListPerUser(APIView):
+    """
+    List all the auth users consumptions or create a new consumption.
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, format=None):
+        consumptions = Consumption.objects.filter(user=self.request.user)
+        serializer = ConsumptionSerializer(consumptions, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        request.data['user'] = self.request.user.pk
+        serializer = ConsumptionSerializer(data=request.data)
+        self.check_object_permissions(request, serializer)
+        if serializer.is_valid():
+            serializer.save(user=self.request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
