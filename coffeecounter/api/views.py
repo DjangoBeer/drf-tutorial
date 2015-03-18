@@ -1,34 +1,32 @@
 from .models import Badge, Consumption
 from .serializers import BadgeSerializer, ConsumptionSerializer
 from .permissions import IsSuperUserOrReadOnly
-from django.http import Http404
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 from rest_framework import permissions
+from rest_framework import mixins
+from rest_framework import generics
 
 
-class BadgeList(APIView):
+class BadgeList(mixins.ListModelMixin,
+                mixins.CreateModelMixin,
+                generics.GenericAPIView):
     """
     List all badges or create a new badge.
     """
+    queryset = Badge.objects.all()
+    serializer_class = BadgeSerializer
     permission_classes = (IsSuperUserOrReadOnly,)
 
-    def get(self, request, format=None):
-        badges = Badge.objects.all()
-        serializer = BadgeSerializer(badges, many=True)
-        return Response(serializer.data)
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
-    def post(self, request, format=None):
-        serializer = BadgeSerializer(data=request.data)
-        self.check_object_permissions(request, serializer)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
 
 
-class BadgeDetail(APIView):
+class BadgeDetail(mixins.RetrieveModelMixin,
+                  mixins.UpdateModelMixin,
+                  mixins.DestroyModelMixin,
+                  generics.GenericAPIView):
     """
     Retrieve, update or delete a badge instance.
 
@@ -37,71 +35,53 @@ class BadgeDetail(APIView):
     explicitly call the .check_object_permissions(request, obj) method on the view
     at the point at which you've retrieved the object.
     """
+    queryset = Badge.objects.all()
+    serializer_class = BadgeSerializer
     permission_classes = (IsSuperUserOrReadOnly,)
 
-    def get_object(self, pk):
-        try:
-            return Badge.objects.get(pk=pk)
-        except Badge.DoesNotExist:
-            raise Http404
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
 
-    def get(self, request, pk, format=None):
-        badge = self.get_object(pk)
-        self.check_object_permissions(request, badge)
-        serializer = BadgeSerializer(badge)
-        return Response(serializer.data)
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
 
-    def put(self, request, pk, format=None):
-        badge = self.get_object(pk)
-        self.check_object_permissions(request, badge)
-        serializer = BadgeSerializer(badge, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
 
-    def patch(self, request, pk, format=None):
-        badge = self.get_object(pk)
-        self.check_object_permissions(request, badge)
-        serializer = BadgeSerializer(badge, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk, format=None):
-        badge = self.get_object(pk)
-        self.check_object_permissions(request, badge)
-        badge.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
 
 
-class ConsumptionList(APIView):
+class ConsumptionList(mixins.ListModelMixin,
+                      mixins.CreateModelMixin,
+                      generics.GenericAPIView):
     """
     List all consumptions.
     """
-    def get(self, request, format=None):
-        consumptions = Consumption.objects.all()
-        serializer = ConsumptionSerializer(consumptions, many=True)
-        return Response(serializer.data)
+    queryset = Consumption.objects.all()
+    serializer_class = ConsumptionSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
 
-class ConsumptionListPerUser(APIView):
+class ConsumptionListPerUser(mixins.ListModelMixin,
+                             mixins.CreateModelMixin,
+                             generics.GenericAPIView):
     """
     List all the auth users consumptions or create a new consumption.
     """
+    serializer_class = ConsumptionSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
-    def get(self, request, format=None):
-        consumptions = Consumption.objects.filter(user=self.request.user)
-        serializer = ConsumptionSerializer(consumptions, many=True)
-        return Response(serializer.data)
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
-    def post(self, request, format=None):
-        request.data['user'] = self.request.user.pk
-        serializer = ConsumptionSerializer(data=request.data)
-        self.check_object_permissions(request, serializer)
-        if serializer.is_valid():
-            serializer.save(user=self.request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        return Consumption.objects.filter(user=self.request.user)
