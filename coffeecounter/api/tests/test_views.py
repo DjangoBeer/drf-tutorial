@@ -103,9 +103,10 @@ class TestViews(TestCase):
         response = self._patch_badge()
         self.assertEqual(response.data['title'], 'A lot of strong coffee')
         badges = Badge.objects.all()
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(badges), 1)
 
-    def test_patch_badge(self):
+    def test_patch_badge_not_allowed(self):
         self.client.login(username='perry', password='top_secret')
         response = self._patch_badge()
         self.assertEqual(response.status_code, 403)
