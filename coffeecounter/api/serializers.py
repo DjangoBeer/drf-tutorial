@@ -18,6 +18,7 @@ class BadgeSerializer(serializers.ModelSerializer):
 
 
 class ConsumptionSerializer(serializers.ModelSerializer):
+    user = serializers.IntegerField(source='user.pk', read_only=True)
     class Meta:
         model = Consumption
         fields = ('id', 'user', 'created')
