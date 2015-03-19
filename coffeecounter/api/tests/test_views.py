@@ -46,7 +46,7 @@ class TestViews(TestCase):
         Badge.objects.create(pk=1, title='A lot of coffee', description='Description')
         self.client.login(username='jacob', password='top_secret')
         response = self.client.get(
-            '/badges/1',
+            '/badges/1/',
             content_type="application/json"
         )
         self.assertEqual(response.data['title'], 'A lot of coffee')
@@ -70,7 +70,7 @@ class TestViews(TestCase):
             'description': 'Description'
         }
         response = self.client.put(
-            '/badges/1', json.dumps(json_badge),
+            '/badges/1/', json.dumps(json_badge),
             content_type="application/json"
         )
         return response
@@ -93,7 +93,7 @@ class TestViews(TestCase):
             'title': 'A lot of strong coffee',
         }
         response = self.client.patch(
-            '/badges/1', json.dumps(json_badge),
+            '/badges/1/', json.dumps(json_badge),
             content_type="application/json"
         )
         return response
@@ -114,7 +114,7 @@ class TestViews(TestCase):
     def _delete_badge(self):
         Badge.objects.create(pk=1, title='Green tea man', description='Description')
         response = self.client.delete(
-            '/badges/1',
+            '/badges/1/',
             content_type="application/json"
         )
         return response
@@ -135,6 +135,17 @@ class TestViews(TestCase):
         Consumption.objects.create(user=self.user_perry)
         Consumption.objects.create(user=self.user_perry)
         self.client.login(username='jacob', password='top_secret')
+        response = self.client.get(
+            '/consumptions/all/', content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 4)
+
+    def test_get_all_consumption_ok_if_no_auth(self):
+        Consumption.objects.create(user=self.user_perry)
+        Consumption.objects.create(user=self.user_jacob)
+        Consumption.objects.create(user=self.user_perry)
+        Consumption.objects.create(user=self.user_perry)
         response = self.client.get(
             '/consumptions/all/', content_type="application/json"
         )
