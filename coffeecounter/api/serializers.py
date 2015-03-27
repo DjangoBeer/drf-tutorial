@@ -32,3 +32,13 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'badges', 'twitter')
+
+
+class StatisticSerializer(serializers.BaseSerializer):
+    def to_representation(self, obj):
+        return {
+            'user': obj.username,
+            'consumptions': [
+                ConsumptionSerializer(consumption).data for consumption in obj.consumptions.all()
+            ]
+        }
