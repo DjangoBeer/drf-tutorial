@@ -36,9 +36,9 @@ class UserSerializer(serializers.ModelSerializer):
 
 class StatisticSerializer(serializers.BaseSerializer):
     def to_representation(self, obj):
-        return {
-            'user': obj.username,
-            'consumptions': [
-                ConsumptionSerializer(consumption).data for consumption in obj.consumptions.all()
-            ]
-        }
+        user_data = {}
+        user_data['user'] = UserSerializer(obj).data
+        user_data['consumptions'] = [
+            ConsumptionSerializer(consumption).data for consumption in obj.consumptions.all()
+        ]
+        return user_data
