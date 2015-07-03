@@ -2,6 +2,11 @@ from .models import Badge, Consumption, PoweredBadge
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
+
+class ExternalConsumptionSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
 class PoweredBadgeSerializer(serializers.ModelSerializer):
     title = serializers.CharField(source='badge.title', read_only=True)
     description = serializers.CharField(source='badge.description', read_only=True)

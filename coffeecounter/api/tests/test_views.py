@@ -179,3 +179,20 @@ class TestViews(TestCase):
             '/consumptions/', content_type="application/json"
         )
         self.assertEqual(response.status_code, 403)
+
+    def test_post_new_external_consumption(self):
+        response = self.client.post(
+            '/consumptions/external/',
+            json.dumps({'email':'perry@dot.com'}),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_post_new_external_consumption_user_not_found(self):
+        response = self.client.post(
+            '/consumptions/external/',
+            json.dumps({'email':'peasdrry@dot.com'}),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 404)
+

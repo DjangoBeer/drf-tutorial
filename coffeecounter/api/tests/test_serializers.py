@@ -1,7 +1,9 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 from api.models import Consumption, Badge, PoweredBadge, CoffeeUser
-from api.serializers import BadgeSerializer, UserSerializer, ConsumptionSerializer, StatisticSerializer
+from api.serializers import BadgeSerializer, UserSerializer
+from api.serializers import ConsumptionSerializer, StatisticSerializer
+from api.serializers import ExternalConsumptionSerializer
 from rest_framework.renderers import JSONRenderer
 
 
@@ -17,6 +19,16 @@ class TestSerializers(TestCase):
 
     def tearDown(self):
         pass
+
+    def test_external_consumption_serializer_valid(self):
+        data = {'email': 'jacob@dot.com'}
+        serializer = ExternalConsumptionSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+    def test_external_consumption_serializer_not_valid(self):
+        data = {'email': 'jacobdotcom'}
+        serializer = ExternalConsumptionSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
 
     def test_badge_serializer_valid(self):
         data = {'pk': 2, 'title': u'Coffee tester', 'description': u'<3 @ 180bpm'}
@@ -88,8 +100,5 @@ class TestSerializers(TestCase):
         PoweredBadge.objects.create(user=self.user_jacob, badge=badge2)
         PoweredBadge.objects.create(user=self.user_jacob, badge=badge3, power=2)
 
-        print StatisticSerializer(User.objects.all(), many=True).data
-
         statistic_data = StatisticSerializer(self.user_perry).data
         self.assertEqual(statistic_data['user']['twitter'], '@perry')
-

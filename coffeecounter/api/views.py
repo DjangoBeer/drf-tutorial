@@ -1,6 +1,10 @@
 from .models import Badge, Consumption
-from .serializers import BadgeSerializer, ConsumptionSerializer
+from .serializers import BadgeSerializer
+from .serializers import ConsumptionSerializer
+from .serializers import ExternalConsumptionSerializer
 from .permissions import IsSuperUserOrReadOnly
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
 from rest_framework import permissions
 from rest_framework import viewsets
 from rest_framework.decorators import list_route
@@ -21,6 +25,17 @@ class ConsumptionViewSet(viewsets.ModelViewSet):
     def all(self, request):
         consumptions = Consumption.objects.all()
         serializer = ConsumptionSerializer(consumptions, many=True)
+        return Response(serializer.data)
+
+    @list_route(methods=['post'], permission_classes=[permissions.AllowAny])
+    def external(self, request):
+        serializer = ExternalConsumptionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, email=serializer.data['email'])
+        Consumption.objects.create(
+            user=user
+        )
         return Response(serializer.data)
 
     def perform_create(self, serializer):
